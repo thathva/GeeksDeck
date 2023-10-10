@@ -1,20 +1,31 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
+import { Provider as PaperProvider } from 'react-native-paper';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import Home from './components/Home';
+import CreateCategory from './components/CreateCategory'
+import CreateFlashcard from './components/CreateFlashcard'
+import ViewFlashcard from './components/ViewFlashcard'
+import Quiz from './components/Quiz'
+
+const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+      <PaperProvider>
+        <SafeAreaProvider>
+          <Stack.Navigator>
+          <Stack.Screen name="Home" options={{
+              headerShown: false
+            }} component={Home} />
+            <Stack.Screen name="Create Categories" component={CreateCategory} />
+            <Stack.Screen name="Create Flashcards" component={CreateFlashcard} />
+            <Stack.Screen name="View Flashcards" component={ViewFlashcard}/>
+            <Stack.Screen name="Quiz" component={Quiz}/>
+          </Stack.Navigator>
+        </SafeAreaProvider>
+      </PaperProvider>
+    </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
