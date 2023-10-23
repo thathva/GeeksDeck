@@ -14,7 +14,7 @@ export default function Home({ navigation }) {
         <Button mode="contained-tonal" style={styles.button} onPress={() => navigation.navigate('Create Flashcards')}>
           Create Flashcards
         </Button>
-        <Button mode="contained-tonal" style={styles.button} onPress={() => navigation.navigate('View Flashcards')}>
+        <Button mode="contained-tonal" style={styles.button} onPress={() => navigation.navigate('Select Category', { quizMode: false })}>
           View Flashcards
         </Button>
         <Button mode="contained-tonal" style={styles.button} onPress={() => navigation.navigate('Quiz')}>

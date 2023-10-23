@@ -1,22 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, ImageBackground } from 'react-native';
+import { StyleSheet, View, ImageBackground, Image } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import DropDown from "react-native-paper-dropdown";
 import axios from 'axios';
+import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
 
 const CreateFlashcard = ({navigation}) => {
   const [term, setTerm] = useState('')
   const [definition, setDefinition] = useState('')
-  const [categories, setCategories] = useState([])
+  const [categories, setCategories] = useState('')
   const [showDropDown, setShowDropDown] = useState(false);
   const [categoryList, setCategoryList] = useState([]);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
     axios.get('http://10.0.0.47:5000/get-categories')
       .then((response) => {
         const categoriesData = response.data;
-        const categoryNames = categoriesData.map(category => category.name);
-        setCategoryList(categoryNames);
+        setCategoryList(categoriesData);
       })
       .catch((err) => {
         console.log(err);
@@ -31,16 +33,52 @@ const CreateFlashcard = ({navigation}) => {
     setDefinition(newDef)
   }
 
-  const onSubmit = () => {
-    const data = {
-      'term': term,
-      'definition': definition
+  const pickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [4, 3],
+    });
+
+    if (result.canceled) {
+      return;
     }
-    axios.post('http://10.0.0.47:5000/create-flashcard', data).then((response) => {
-      console.log(response)
-    }).catch((err) => {
-      console.log(err)
-    })
+
+    if (result.assets[0].uri) {
+      const localUri = result.assets[0].uri;
+      const filename = localUri.split('/').pop();
+      const newUri = FileSystem.documentDirectory + filename;
+
+      try {
+        await FileSystem.copyAsync({
+          from: localUri,
+          to: newUri,
+        });
+        setSelectedImage(newUri);
+      } catch (error) {
+        console.error('Error saving image: ', error);
+      }
+    }
+  };
+
+  const onSubmit = () => {
+    const category = categoryList.find(x => x.name === categories)
+    if(category) {
+      const data = {
+        'categoryId': category.id,
+        'term': term,
+        'definition': definition,
+        'image': selectedImage
+      }
+      axios.post('http://10.0.0.47:5000/create-flashcard', data).then((response) => {
+        console.log(response)
+      }).catch((err) => {
+        console.error(err)
+      })
+    }
+    else {
+      console.log("Something went wrong")
+    }
   }
 
   return (
@@ -58,10 +96,17 @@ const CreateFlashcard = ({navigation}) => {
               onDismiss={() => setShowDropDown(false)}
               value={categories}
               setValue={setCategories}
-              list={categoryList.map((category, index) => ({ label: category, value: category, key: `category_${index}` }))}
+              list={categoryList.map((category, index) => ({ label: category.name, value: category.name, key: category.id }))}
             />
         <TextInput label="Term" value={term} onChangeText={termHandler} style={styles.input} />
         <TextInput label="Definition" value={definition} onChangeText={definitionHandler} style={styles.input} />
+        {selectedImage && (
+          <Image
+            source={{ uri: selectedImage }}
+            style={{ width: 70, height: 70 }}
+          />
+        )}
+        <Button mode="contained" onPress={pickImage}>Upload Image</Button>
         <Button mode="contained" onPress={onSubmit}>
           Create
         </Button>

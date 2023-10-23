@@ -16,6 +16,7 @@ app.use(
 app.post('/create-category', db.createCategory)
 app.post('/create-flashcard', db.createFlashcard)
 app.get('/get-categories', db.getCategories)
+app.get('/view-flashcards', db.getFlashcards)
 
 app.listen(port, () => {
     console.log(`App running on port ${port}.`)

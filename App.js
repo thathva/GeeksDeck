@@ -7,6 +7,8 @@ import CreateCategory from './components/CreateCategory'
 import CreateFlashcard from './components/CreateFlashcard'
 import ViewFlashcard from './components/ViewFlashcard'
 import Quiz from './components/Quiz'
+import SelectCategory from './components/SelectCategory';
+import FinalScores from './components/FinalScores';
 
 const Stack = createNativeStackNavigator();
 
@@ -21,8 +23,10 @@ export default function App() {
             }} component={Home} />
             <Stack.Screen name="Create Categories" component={CreateCategory} />
             <Stack.Screen name="Create Flashcards" component={CreateFlashcard} />
+            <Stack.Screen name="Select Category" component={SelectCategory} />
             <Stack.Screen name="View Flashcards" component={ViewFlashcard}/>
             <Stack.Screen name="Quiz" component={Quiz}/>
+            <Stack.Screen name="Final Scores" component={FinalScores}/>
           </Stack.Navigator>
         </SafeAreaProvider>
       </PaperProvider>

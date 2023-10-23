@@ -27,16 +27,27 @@ const createCategory = (req, res) => {
 }
 
 const createFlashcard = (req, res) => {
-  const {term, definition, categoryId} = req.body
-  pool.query('INSERT INTO flashcard (term, definition, categoryId) VALUES ($1, $2, $3)', [term, definition, categoryId], (err, results) => {
+  const {categoryId, term, definition, image} = req.body
+  pool.query('INSERT INTO flashcard (categoryid, term, definition, image) VALUES ($1, $2, $3, $4)', [categoryId, term, definition, image], (err, results) => {
     if (err) {
       throw err
     }
     res.status(200).json(results)
   })
 }
+
+const getFlashcards = (req, res) => {  
+  pool.query('SELECT * FROM flashcard WHERE categoryid = ($1)', [req.query.id], (err, results) => {
+    if (err) {
+      throw err
+    }
+    res.status(200).json(results.rows)
+  })
+}
+
 module.exports = {
   getCategories,
   createCategory,
-  createFlashcard
+  createFlashcard,
+  getFlashcards
 }
