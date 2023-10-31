@@ -3,6 +3,7 @@ import { StyleSheet, View, ImageBackground } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import DropDown from "react-native-paper-dropdown";
 import axios from 'axios';
+import Container, { Toast } from 'toastify-react-native'
 
 const SelectCategory = ({navigation, quizMode}) => {
   const [categories, setCategories] = useState('')
@@ -16,18 +17,17 @@ const SelectCategory = ({navigation, quizMode}) => {
         setCategoryList(categoriesData);
       })
       .catch((err) => {
-        console.log(err);
+        Toast.error('Something went wrong!')
       });
   }, []);
 
   const onSubmit = () => {
     const category = categoryList.find(x => x.name === categories)
     if(category) {
-        console.log(category.id)
         navigation.navigate('View Flashcards', { categoryId: category.id, quizMode: quizMode });
     }
     else {
-      console.log("Something went wrong")
+      Toast.error('Something went wrong!')
     }
   }
 
@@ -37,6 +37,7 @@ const SelectCategory = ({navigation, quizMode}) => {
       style={styles.container}
       resizeMode="cover"
     >
+      <Container position="top" width={300}/>
       <View style={styles.formContainer}>
       <DropDown
               label={"Category"}
@@ -48,7 +49,7 @@ const SelectCategory = ({navigation, quizMode}) => {
               setValue={setCategories}
               list={categoryList.map((category, index) => ({ label: category.name, value: category.name, key: category.id }))}
             />
-        <Button mode="contained" onPress={onSubmit}>
+        <Button style={{marginTop: 10}} mode="contained" onPress={onSubmit}>
           Review
         </Button>
       </View>

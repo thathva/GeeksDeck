@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { StyleSheet, View, ImageBackground } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import axios from 'axios'
+import Container, { Toast } from 'toastify-react-native'
 
 const CreateCategory = ({navigation}) => {
   const [name, setName] = useState('')
@@ -24,9 +25,10 @@ const CreateCategory = ({navigation}) => {
       'Content-Type': 'application/json'
     }
     axios.post('http://10.0.0.47:5000/create-category', data, headers).then((response) => {
-      console.log(response)
+      Toast.success('Category created successfully!')
+      navigation.navigate('Home')
     }).catch((err) => {
-      console.error(err.stack)
+      Toast.error('Something went wrong!')
     })
   }
 
@@ -36,6 +38,7 @@ const CreateCategory = ({navigation}) => {
       style={styles.container}
       resizeMode="cover"
     >
+      <Container position="top"  width={300}/>
       <View style={styles.formContainer}>
         <TextInput label="Name" style={styles.input} value={name} onChangeText={nameHandler} />
         <TextInput label="Description" style={styles.input} value={description} onChangeText={descriptionHandler} />

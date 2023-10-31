@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, ImageBackground, Text, TouchableOpacity, Image } from 'react-native';
 import axios from 'axios';
+import Container, { Toast } from 'toastify-react-native'
 import { Button } from 'react-native-paper';
 
 const ViewFlashcard = ({ navigation, route }) => {
@@ -12,21 +13,21 @@ const ViewFlashcard = ({ navigation, route }) => {
   const [correct, setCorrect] = useState(0)
   const [incorrect, setIncorrect] = useState(0)
   const { categoryId, quizMode } = route.params;
-  
+
   useEffect(() => {
     axios.get('http://10.0.0.47:5000/view-flashcards?id=' + categoryId).then((response) => {
       setFlashcards(response.data);
       setScore(response.data.length)
       setLoading(false);
     }).catch(err => {
-      console.log(err);
+      Toast.error('Something went wrong!')
     });
   }, []);
 
   useEffect(() => {
     if (!loading && correct + incorrect === flashcards.length) {
       navigation.navigate('Final Scores', {
-        totalScore: score,  
+        totalScore: score,
         correct,
         incorrect
       });
@@ -34,10 +35,10 @@ const ViewFlashcard = ({ navigation, route }) => {
   }, [correct, incorrect]);
 
   const renderNextFlashcard = () => {
-    if(quizMode) {
+    if (quizMode) {
       if ((index) >= flashcards.length - 1) {
-          navigation.navigate('Final Scores', {totalScore: score, correct: correct, incorrect: incorrect})
-        } else {
+        navigation.navigate('Final Scores', { totalScore: score, correct: correct, incorrect: incorrect })
+      } else {
         setIndex(index + 1);
       }
     }
@@ -81,20 +82,22 @@ const ViewFlashcard = ({ navigation, route }) => {
       style={styles.container}
       resizeMode="cover"
     >
+      <Container position="top" width={300} />
       {loading ? (
         <Text>Loading...</Text>
       ) : (
-        <View style={styles.container}>
-          <View style={styles.buttonParent}>
-            <Button
-              icon="chevron-left-circle-outline"
-              onPress={renderPrevFlashcard}
-              labelStyle={styles.buttonLabel}
-              style={styles.button}
-            ></Button>
-          </View>
+        <View style={!quizMode ? styles.container : styles.quizContainer}>
+          {!quizMode ?
+            <View style={styles.buttonParent}>
+              <Button
+                icon="chevron-left-circle-outline"
+                onPress={renderPrevFlashcard}
+                labelStyle={styles.buttonLabel}
+                style={styles.button}
+              ></Button>
+            </View> : ""}
           <View style={styles.formContainer}>
-          <Text>{quizMode}</Text>
+            <Text>{quizMode}</Text>
             <TouchableOpacity style={styles.card} onPress={flipCard}>
               <Text style={styles.cardText}>
                 {isFlipped ? flashcards[index].definition : flashcards[index].term}
@@ -107,20 +110,21 @@ const ViewFlashcard = ({ navigation, route }) => {
               )}
             </TouchableOpacity >
           </View>
-          <View style={styles.buttonParent}>
-            <Button
-              icon="chevron-right-circle-outline"
-              onPress={renderNextFlashcard}
-              labelStyle={styles.buttonLabel}
-              style={styles.button}
-            ></Button>
-          </View>
+          {!quizMode ?
+            <View style={styles.buttonParent}>
+              <Button
+                icon="chevron-right-circle-outline"
+                onPress={renderNextFlashcard}
+                labelStyle={styles.buttonLabel}
+                style={styles.button}
+              ></Button>
+            </View> : ""}
           {quizMode ? (
-          <View>
-            <Button mode='contained' onPress={incorrectHandler}>Incorrect</Button>
-            <Button mode='contained' onPress={correctHandler}>Correct</Button>
-          </View>
-          ) : "" }
+            <View style={styles.buttonContainer}>
+              <Button mode='contained' style={styles.incorrectButton} onPress={incorrectHandler}>Incorrect</Button>
+              <Button mode='contained' style={styles.correctButton} onPress={correctHandler}>Correct</Button>
+            </View>
+          ) : ""}
         </View>
       )}
     </ImageBackground>
@@ -134,11 +138,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexDirection: 'row'
   },
+  quizContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'column'
+  },
   formContainer: {
     width: '67%',
     padding: 16,
     backgroundColor: 'rgba(255, 255, 255, 0.8)',
     borderRadius: 8,
+  },
+  correctButton: {
+    flex: 1,
+    marginLeft: 20
+  },
+  incorrectButton: {
+    flex: 1,
   },
   card: {
     height: '50%',
@@ -159,6 +176,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexDirection: 'column',
     margin: 10,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 20,
+    paddingHorizontal: 20, 
   },
   button: {
     padding: 20,

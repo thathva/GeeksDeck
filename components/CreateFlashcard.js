@@ -5,6 +5,7 @@ import DropDown from "react-native-paper-dropdown";
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
+import Container, { Toast } from 'toastify-react-native'
 
 const CreateFlashcard = ({navigation}) => {
   const [term, setTerm] = useState('')
@@ -21,7 +22,7 @@ const CreateFlashcard = ({navigation}) => {
         setCategoryList(categoriesData);
       })
       .catch((err) => {
-        console.log(err);
+        Toast.error('Something went wrong!')
       });
   }, []);
 
@@ -71,13 +72,14 @@ const CreateFlashcard = ({navigation}) => {
         'image': selectedImage
       }
       axios.post('http://10.0.0.47:5000/create-flashcard', data).then((response) => {
-        console.log(response)
+        Toast.success("Created flashcard!")
+        navigation.navigate('Home')
       }).catch((err) => {
-        console.error(err)
+        Toast.error('Something went wrong!')
       })
     }
     else {
-      console.log("Something went wrong")
+      Toast.error("Something went wrong")
     }
   }
 
@@ -87,6 +89,7 @@ const CreateFlashcard = ({navigation}) => {
       style={styles.container}
       resizeMode="cover"
     >
+      <Container position="top" width={300} />
       <View style={styles.formContainer}>
       <DropDown
               label={"Category"}
@@ -103,10 +106,10 @@ const CreateFlashcard = ({navigation}) => {
         {selectedImage && (
           <Image
             source={{ uri: selectedImage }}
-            style={{ width: 70, height: 70 }}
+            style={{ width: 70, height: 70, marginLeft: '35%', marginTop: 10 }}
           />
         )}
-        <Button mode="contained" onPress={pickImage}>Upload Image</Button>
+        <Button mode="contained" style={{marginBottom: 10, marginTop: 10}} onPress={pickImage}>Upload Image</Button>
         <Button mode="contained" onPress={onSubmit}>
           Create
         </Button>
@@ -128,7 +131,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   input: {
-    marginBottom: 16,
+    marginTop: 10,
   }
 });
 

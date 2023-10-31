@@ -1,6 +1,6 @@
-import { Provider as PaperProvider } from 'react-native-paper';
+import { Provider as PaperProvider, Button } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import Home from './components/Home';
 import CreateCategory from './components/CreateCategory'
@@ -26,7 +26,9 @@ export default function App() {
             <Stack.Screen name="Select Category" component={SelectCategory} />
             <Stack.Screen name="View Flashcards" component={ViewFlashcard}/>
             <Stack.Screen name="Quiz" component={Quiz}/>
-            <Stack.Screen name="Final Scores" component={FinalScores}/>
+            <Stack.Screen name="Final Scores" component={FinalScores} options={{
+            headerShown: false
+          }}/>
           </Stack.Navigator>
         </SafeAreaProvider>
       </PaperProvider>
