@@ -1,19 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, ImageBackground, Image } from 'react-native';
+import { StyleSheet, View, ImageBackground, Image, Text } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
 import DropDown from "react-native-paper-dropdown";
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
 import * as FileSystem from 'expo-file-system';
-import Container, { Toast } from 'toastify-react-native'
+import Container, { Toast } from 'toastify-react-native';
 
-const CreateFlashcard = ({navigation}) => {
-  const [term, setTerm] = useState('')
-  const [definition, setDefinition] = useState('')
-  const [categories, setCategories] = useState('')
+const CreateFlashcard = ({ navigation }) => {
+  const [term, setTerm] = useState('');
+  const [definition, setDefinition] = useState('');
+  const [categories, setCategories] = useState('');
   const [showDropDown, setShowDropDown] = useState(false);
   const [categoryList, setCategoryList] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
+
+  const [termError, setTermError] = useState('');
+  const [definitionError, setDefinitionError] = useState('');
 
   useEffect(() => {
     axios.get('http://10.0.0.47:5000/get-categories')
@@ -22,16 +25,18 @@ const CreateFlashcard = ({navigation}) => {
         setCategoryList(categoriesData);
       })
       .catch((err) => {
-        Toast.error('Something went wrong!')
+        Toast.error('Something went wrong!');
       });
   }, []);
 
   const termHandler = (newTerm) => {
-    setTerm(newTerm)
+    setTerm(newTerm);
+    setTermError('');
   }
 
   const definitionHandler = (newDef) => {
-    setDefinition(newDef)
+    setDefinition(newDef);
+    setDefinitionError('');
   }
 
   const pickImage = async () => {
@@ -41,11 +46,7 @@ const CreateFlashcard = ({navigation}) => {
       aspect: [4, 3],
     });
 
-    if (result.canceled) {
-      return;
-    }
-
-    if (result.assets[0].uri) {
+    if (!result.canceled) {
       const localUri = result.assets[0].uri;
       const filename = localUri.split('/').pop();
       const newUri = FileSystem.documentDirectory + filename;
@@ -60,28 +61,49 @@ const CreateFlashcard = ({navigation}) => {
         console.error('Error saving image: ', error);
       }
     }
-  };
+  }
 
   const onSubmit = () => {
-    const category = categoryList.find(x => x.name === categories)
-    if(category) {
-      const data = {
-        'categoryId': category.id,
-        'term': term,
-        'definition': definition,
-        'image': selectedImage
-      }
-      axios.post('http://10.0.0.47:5000/create-flashcard', data).then((response) => {
-        Toast.success("Created flashcard!")
-        navigation.navigate('Home')
-      }).catch((err) => {
-        Toast.error('Something went wrong!')
-      })
+    let isValid = true;
+
+    if (categories.trim() === '') {
+      Toast.error('Please select a category');
+      isValid = false;
     }
-    else {
-      Toast.error("Something went wrong")
+
+    if (term.trim() === '') {
+      setTermError('Term is required');
+      isValid = false;
+    }
+
+    if (definition.trim() === '') {
+      setDefinitionError('Definition is required');
+      isValid = false;
+    }
+
+    if (isValid) {
+      const category = categoryList.find(x => x.name === categories);
+      if (category) {
+        const data = {
+          categoryId: category.id,
+          term: term,
+          definition: definition,
+          image: selectedImage
+        }
+        axios.post('http://10.0.0.47:5000/create-flashcard', data)
+          .then((response) => {
+            Toast.success("Created flashcard!");
+            navigation.navigate('Home');
+          })
+          .catch((err) => {
+            Toast.error('Something went wrong!');
+          });
+      } else {
+        Toast.error("Something went wrong");
+      }
     }
   }
+  const isButtonDisabled = termError !== '' || definitionError !== '' || categories.trim() === '';
 
   return (
     <ImageBackground
@@ -91,28 +113,29 @@ const CreateFlashcard = ({navigation}) => {
     >
       <Container position="top" width={300} />
       <View style={styles.formContainer}>
-      <DropDown
-              label={"Category"}
-              mode={"outlined"}
-              visible={showDropDown}
-              showDropDown={() => setShowDropDown(true)}
-              onDismiss={() => setShowDropDown(false)}
-              value={categories}
-              setValue={setCategories}
-              list={categoryList.map((category, index) => ({ label: category.name, value: category.name, key: category.id }))}
-            />
-        <TextInput label="Term" value={term} onChangeText={termHandler} style={styles.input} />
-        <TextInput label="Definition" value={definition} onChangeText={definitionHandler} style={styles.input} />
+        <DropDown
+          label={"Category"}
+          mode={"outlined"}
+          visible={showDropDown}
+          showDropDown={() => setShowDropDown(true)}
+          onDismiss={() => setShowDropDown(false)}
+          value={categories}
+          setValue={setCategories}
+          list={categoryList.map((category, index) => ({ label: category.name, value: category.name, key: category.id }))}
+        />
+        {categories.trim() === '' && <Text style={styles.errorText}>Please select a category</Text>}
+        <TextInput mode='outlined' label="Term" value={term} onChangeText={termHandler} style={styles.input} />
+        {termError !== '' && <Text style={styles.errorText}>{termError}</Text>}
+        <TextInput mode='outlined' label="Definition" value={definition} onChangeText={definitionHandler} style={styles.input} />
+        {definitionError !== '' && <Text style={styles.errorText}>{definitionError}</Text>}
         {selectedImage && (
           <Image
             source={{ uri: selectedImage }}
             style={{ width: 70, height: 70, marginLeft: '35%', marginTop: 10 }}
           />
         )}
-        <Button mode="contained" style={{marginBottom: 10, marginTop: 10}} onPress={pickImage}>Upload Image</Button>
-        <Button mode="contained" onPress={onSubmit}>
-          Create
-        </Button>
+        <Button mode="contained" style={{ marginBottom: 10, marginTop: 10 }} onPress={pickImage}>Upload Image</Button>
+        <Button mode="contained" onPress={onSubmit} disabled={isButtonDisabled}>Create</Button>
       </View>
     </ImageBackground>
   );
@@ -132,7 +155,11 @@ const styles = StyleSheet.create({
   },
   input: {
     marginTop: 10,
-  }
+  },
+  errorText: {
+    color: 'red',
+    marginBottom: 8,
+  },
 });
 
-export default CreateFlashcard
+export default CreateFlashcard;

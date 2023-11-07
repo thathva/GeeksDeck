@@ -1,36 +1,61 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, ImageBackground } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, View, ImageBackground, Text } from 'react-native';
 import { TextInput, Button } from 'react-native-paper';
-import axios from 'axios'
-import Container, { Toast } from 'toastify-react-native'
+import axios from 'axios';
+import Container, { Toast } from 'toastify-react-native';
 
-const CreateCategory = ({navigation}) => {
-  const [name, setName] = useState('')
-  const [description, setDescription] = useState('')
+const CreateCategory = ({ navigation }) => {
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [nameError, setNameError] = useState('');
+  const [descriptionError, setDescriptionError] = useState('');
 
   const nameHandler = (newName) => {
-    setName(newName)
-  }
+    setName(newName);
+    setNameError('');
+  };
 
   const descriptionHandler = (newDesc) => {
-    setDescription(newDesc)
-  }
+    setDescription(newDesc);
+    setDescriptionError('');
+  };
+
 
   const onSubmit = () => {
-    const data = {
-      'name': name,
-      'description': description
+    let isValid = true;
+    if (name.trim() === '') {
+      setNameError('Name is required');
+      isValid = false;
     }
-    const headers = { 
-      'Content-Type': 'application/json'
+    if (description.trim() === '') {
+      setDescriptionError('Description is required');
+      isValid = false;
     }
-    axios.post('http://10.0.0.47:5000/create-category', data, headers).then((response) => {
-      Toast.success('Category created successfully!')
-      navigation.navigate('Home')
-    }).catch((err) => {
-      Toast.error('Something went wrong!')
-    })
-  }
+
+    if (isValid) {
+      const data = {
+        name: name,
+        description: description,
+      };
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+
+      axios
+        .post('http://10.0.0.47:5000/create-category', data, headers)
+        .then((response) => {
+          navigation.navigate('Home');
+        })
+        .catch((err) => {
+          Toast.error('Something went wrong!');
+        });
+    }
+  };
+  const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+
+  React.useEffect(() => {
+    setIsButtonDisabled(nameError !== '' || descriptionError !== '');
+  }, [nameError, descriptionError]);
 
   return (
     <ImageBackground
@@ -38,11 +63,35 @@ const CreateCategory = ({navigation}) => {
       style={styles.container}
       resizeMode="cover"
     >
-      <Container position="top"  width={300}/>
+      <Container position="top" width={300} />
       <View style={styles.formContainer}>
-        <TextInput label="Name" style={styles.input} value={name} onChangeText={nameHandler} />
-        <TextInput label="Description" style={styles.input} value={description} onChangeText={descriptionHandler} />
-        <Button mode="contained" onPress={onSubmit}>
+        <TextInput
+          label="Name"
+          style={styles.input}
+          mode='outlined' 
+          value={name}
+          onChangeText={nameHandler}
+          error={nameError !== ''}
+        />
+        {nameError !== '' && (
+          <Text style={styles.errorText}>{nameError}</Text>
+        )}
+        <TextInput
+          label="Description"
+          style={styles.input}
+          mode='outlined' 
+          value={description}
+          onChangeText={descriptionHandler}
+          error={descriptionError !== ''}
+        />
+        {descriptionError !== '' && (
+          <Text style={styles.errorText}>{descriptionError}</Text>
+        )}
+        <Button
+          mode="contained"
+          onPress={onSubmit}
+          disabled={isButtonDisabled}
+        >
           Create
         </Button>
       </View>
@@ -64,7 +113,11 @@ const styles = StyleSheet.create({
   },
   input: {
     marginBottom: 16,
-  }
+  },
+  errorText: {
+    color: 'red',
+    marginBottom: 8,
+  },
 });
 
-export default CreateCategory
+export default CreateCategory;
