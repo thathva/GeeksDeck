@@ -1,11 +1,15 @@
 const Pool = require('pg').Pool
+require('dotenv').config();
+
 const pool = new Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'geeksdeck',
-  password: 'password',
-  port: 5432,
+  user: process.env.POSTGRES_USER,
+  host: process.env.POSTGRES_HOST,
+  database: process.env.POSTGRES_DATABASE,
+  password: process.env.POSTGRES_PASSWORD,
+  port: process.env.POSTGRES_PORT,
+  ssl: process.env.POSTGRES_SSL
 })
+
 
 const getCategories = (req, res) => {  
     pool.query('SELECT * FROM category', (err, results) => {

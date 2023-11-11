@@ -11,7 +11,7 @@ const SelectCategory = ({navigation, quizMode}) => {
   const [categoryList, setCategoryList] = useState([]);
 
   useEffect(() => {
-    axios.get('http://10.0.0.47:5000/get-categories')
+    axios.get(process.env.EXPO_PUBLIC_SERVER_URL + '/get-categories')
       .then((response) => {
         const categoriesData = response.data;
         setCategoryList(categoriesData);

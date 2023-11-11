@@ -15,7 +15,7 @@ const ViewFlashcard = ({ navigation, route }) => {
   const { categoryId, quizMode } = route.params;
 
   useEffect(() => {
-    axios.get('http://10.0.0.47:5000/view-flashcards?id=' + categoryId).then((response) => {
+    axios.get(process.env.EXPO_PUBLIC_SERVER_URL + '/view-flashcards?id=' + categoryId).then((response) => {
       setFlashcards(response.data);
       setScore(response.data.length)
       setLoading(false);

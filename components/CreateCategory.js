@@ -42,7 +42,7 @@ const CreateCategory = ({ navigation }) => {
       };
 
       axios
-        .post('http://10.0.0.47:5000/create-category', data, headers)
+        .post(process.env.EXPO_PUBLIC_SERVER_URL + '/create-category', data, headers)
         .then((response) => {
           navigation.navigate('Home');
         })

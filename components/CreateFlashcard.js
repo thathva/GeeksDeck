@@ -19,7 +19,7 @@ const CreateFlashcard = ({ navigation }) => {
   const [definitionError, setDefinitionError] = useState('');
 
   useEffect(() => {
-    axios.get('http://10.0.0.47:5000/get-categories')
+    axios.get(process.env.EXPO_PUBLIC_SERVER_URL + '/get-categories')
       .then((response) => {
         const categoriesData = response.data;
         setCategoryList(categoriesData);
@@ -90,7 +90,7 @@ const CreateFlashcard = ({ navigation }) => {
           definition: definition,
           image: selectedImage
         }
-        axios.post('http://10.0.0.47:5000/create-flashcard', data)
+        axios.post(process.env.EXPO_PUBLIC_SERVER_URL + '/create-flashcard', data)
           .then((response) => {
             Toast.success("Created flashcard!");
             navigation.navigate('Home');
