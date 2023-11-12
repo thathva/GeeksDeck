@@ -44,7 +44,10 @@ const CreateCategory = ({ navigation }) => {
       axios
         .post(process.env.EXPO_PUBLIC_SERVER_URL + '/create-category', data, headers)
         .then((response) => {
-          navigation.navigate('Home');
+          Toast.success('Created category!')
+          setTimeout(() => {
+            navigation.navigate('Home');
+          }, 2600);
         })
         .catch((err) => {
           Toast.error('Something went wrong!');

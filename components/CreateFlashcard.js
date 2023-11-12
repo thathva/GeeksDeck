@@ -103,7 +103,9 @@ const CreateFlashcard = ({ navigation }) => {
         axios.post(process.env.EXPO_PUBLIC_SERVER_URL + '/create-flashcard', data)
           .then((response) => {
             Toast.success("Created flashcard!");
-            navigation.navigate('Home');
+            setTimeout(() => {
+              navigation.navigate('Home');
+            }, 2600);
           })
           .catch((err) => {
             Toast.error('Something went wrong!');
