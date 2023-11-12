@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, ImageBackground, Text, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
+import { StyleSheet, View, ImageBackground, Text, TouchableOpacity, Image, ActivityIndicator, Animated, Easing } from 'react-native';
 import axios from 'axios';
 import Container, { Toast } from 'toastify-react-native'
 import { Button } from 'react-native-paper';
@@ -15,8 +15,13 @@ const ViewFlashcard = ({ navigation, route }) => {
   const { categoryId, quizMode } = route.params;
 
   useEffect(() => {
+    if(quizMode) {
+      navigation.setOptions({
+        title: 'Quiz Mode',
+      });
+    }
     axios.get(process.env.EXPO_PUBLIC_SERVER_URL + '/view-flashcards?id=' + categoryId).then((response) => {
-      if(response.data.length == 0) {
+      if (response.data.length == 0) {
         Toast.error('Add some flashcards!')
         setTimeout(() => {
           navigation.navigate('Home')
@@ -26,7 +31,7 @@ const ViewFlashcard = ({ navigation, route }) => {
 
       setFlashcards(response.data);
       setScore(response.data.length)
-      
+
       setLoading(false);
     }).catch(err => {
       Toast.error('Something went wrong!')
@@ -71,8 +76,22 @@ const ViewFlashcard = ({ navigation, route }) => {
     setIsFlipped(false);
   };
 
+  const [flipAnimation] = useState(new Animated.Value(0)); // New state for flip animation
+
+  const startFlipAnimation = () => {
+    Animated.timing(flipAnimation, {
+      toValue: 180,
+      duration: 500,
+      easing: Easing.linear,
+      useNativeDriver: true,
+    }).start(() => {
+      setIsFlipped(!isFlipped);
+      flipAnimation.setValue(0);
+    });
+  };
+
   const flipCard = () => {
-    setIsFlipped(!isFlipped);
+    startFlipAnimation();
   };
 
   const correctHandler = () => {
@@ -85,6 +104,7 @@ const ViewFlashcard = ({ navigation, route }) => {
     renderNextFlashcard()
   }
 
+
   return (
     <ImageBackground
       source={require('../assets/background.png')}
@@ -93,7 +113,7 @@ const ViewFlashcard = ({ navigation, route }) => {
     >
       <Container position="top" width={300} />
       {loading ? (
-        <ActivityIndicator size={100}/>
+        <ActivityIndicator size={100} />
       ) : (
         <View style={!quizMode ? styles.container : styles.quizContainer}>
           {!quizMode ?
@@ -107,17 +127,37 @@ const ViewFlashcard = ({ navigation, route }) => {
             </View> : ""}
           <View style={styles.formContainer}>
             <Text>{quizMode}</Text>
-            <TouchableOpacity style={styles.card} onPress={flipCard}>
-              <Text style={styles.cardText}>
-                {isFlipped ? flashcards[index].definition : flashcards[index].term}
-              </Text>
-              {flashcards[index].image && (
-                <Image
-                  source={{ uri: flashcards[index].image }}
-                  style={{ width: 70, height: 70 }}
-                />
-              )}
-            </TouchableOpacity >
+            <TouchableOpacity
+              style={styles.cardContainer}
+              activeOpacity={1}
+              onPress={flipCard}
+            >
+              <Animated.View
+                style={[
+                  styles.card,
+                  {
+                    transform: [
+                      {
+                        rotateY: flipAnimation.interpolate({
+                          inputRange: [0, 180],
+                          outputRange: ['0deg', '180deg'],
+                        }),
+                      },
+                    ],
+                  },
+                ]}
+              >
+                <Text style={styles.cardText}>
+                  {isFlipped ? flashcards[index].definition : flashcards[index].term}
+                </Text>
+                {flashcards[index].image && (
+                  <Image
+                    source={{ uri: flashcards[index].image }}
+                    style={{ width: 70, height: 70 }}
+                  />
+                )}
+              </Animated.View>
+            </TouchableOpacity>
           </View>
           {!quizMode ?
             <View style={styles.buttonParent}>
@@ -166,11 +206,20 @@ const styles = StyleSheet.create({
   incorrectButton: {
     flex: 1,
   },
-  card: {
+  cardContainer: {
     height: '50%',
     width: '100%',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  card: {
+    backfaceVisibility: 'hidden',
+    height: '100%',
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 8,
+    position: 'absolute',
   },
   cardText: {
     fontSize: 24,
@@ -181,6 +230,7 @@ const styles = StyleSheet.create({
   },
   buttonParent: {
     flex: 1,
+    marginTop: 20,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'column',
@@ -190,7 +240,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginTop: 20,
-    paddingHorizontal: 20, 
+    paddingHorizontal: 20,
   },
   button: {
     padding: 20,
