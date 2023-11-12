@@ -27,7 +27,7 @@ const SelectCategory = ({navigation, quizMode}) => {
         navigation.navigate('View Flashcards', { categoryId: category.id, quizMode: quizMode });
     }
     else {
-      Toast.error('Something went wrong!')
+      Toast.error('Something went wrong! Select a category')
     }
   }
 
@@ -37,7 +37,7 @@ const SelectCategory = ({navigation, quizMode}) => {
       style={styles.container}
       resizeMode="cover"
     >
-      <Container position="top" width={300}/>
+      <Container position="top" width={350}/>
       <View style={styles.formContainer}>
       <DropDown
               label={"Category"}

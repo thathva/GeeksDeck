@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, ImageBackground, Text, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, View, ImageBackground, Text, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import axios from 'axios';
 import Container, { Toast } from 'toastify-react-native'
 import { Button } from 'react-native-paper';
@@ -16,8 +16,17 @@ const ViewFlashcard = ({ navigation, route }) => {
 
   useEffect(() => {
     axios.get(process.env.EXPO_PUBLIC_SERVER_URL + '/view-flashcards?id=' + categoryId).then((response) => {
+      if(response.data.length == 0) {
+        Toast.error('Add some flashcards!')
+        setTimeout(() => {
+          navigation.navigate('Home')
+        }, 2600);
+        return
+      }
+
       setFlashcards(response.data);
       setScore(response.data.length)
+      
       setLoading(false);
     }).catch(err => {
       Toast.error('Something went wrong!')
@@ -84,7 +93,7 @@ const ViewFlashcard = ({ navigation, route }) => {
     >
       <Container position="top" width={300} />
       {loading ? (
-        <Text>Loading...</Text>
+        <ActivityIndicator size={100}/>
       ) : (
         <View style={!quizMode ? styles.container : styles.quizContainer}>
           {!quizMode ?

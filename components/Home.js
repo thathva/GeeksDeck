@@ -6,7 +6,7 @@ import { Button } from 'react-native-paper';
 export default function Home({ navigation }) {
     return (
       <ImageBackground source={require('../assets/background.png')} style={styles.container} resizeMode="cover">
-        <Text variant="headlineLarge" style={styles.text}>Welcome to GeekDecks!</Text>
+        <Text variant="headlineLarge" style={styles.text}>Welcome to GeekDecks! Create a category to get started!</Text>
         <View style={styles.spacer} />
         <Button mode="contained-tonal" style={styles.button} onPress={() => navigation.navigate('Create Categories')}>
           Create Category
