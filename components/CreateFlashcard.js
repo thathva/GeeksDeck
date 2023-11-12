@@ -4,10 +4,13 @@ import { TextInput, Button } from 'react-native-paper';
 import DropDown from "react-native-paper-dropdown";
 import axios from 'axios';
 import * as ImagePicker from 'expo-image-picker';
-import * as FileSystem from 'expo-file-system';
 import Container, { Toast } from 'toastify-react-native';
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import {app} from '../firebaseConfig'
+
 
 const CreateFlashcard = ({ navigation }) => {
+  const storage = getStorage(app);
   const [term, setTerm] = useState('');
   const [definition, setDefinition] = useState('');
   const [categories, setCategories] = useState('');
@@ -39,6 +42,22 @@ const CreateFlashcard = ({ navigation }) => {
     setDefinitionError('');
   }
 
+  const uploadImageToFirebase = async (localUri) => {
+    try {
+      const response = await fetch(localUri);
+      const blob = await response.blob();
+      const filename = 'images/' + Date.now();
+      const storageRef = ref(storage, filename);
+      await uploadBytes(storageRef, blob);
+      const downloadURL = await getDownloadURL(storageRef);
+      return downloadURL;
+    } catch (error) {
+      Toast.error('Something went wrong!');
+      return null;
+    }
+  };
+
+
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -48,20 +67,11 @@ const CreateFlashcard = ({ navigation }) => {
 
     if (!result.canceled) {
       const localUri = result.assets[0].uri;
-      const filename = localUri.split('/').pop();
-      const newUri = FileSystem.documentDirectory + filename;
-
-      try {
-        await FileSystem.copyAsync({
-          from: localUri,
-          to: newUri,
-        });
-        setSelectedImage(newUri);
-      } catch (error) {
-        console.error('Error saving image: ', error);
-      }
+      const downloadURL = await uploadImageToFirebase(localUri);
+      setSelectedImage(downloadURL)
     }
   }
+
 
   const onSubmit = () => {
     let isValid = true;
