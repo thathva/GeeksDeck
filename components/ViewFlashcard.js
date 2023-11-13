@@ -76,8 +76,9 @@ const ViewFlashcard = ({ navigation, route }) => {
     setIsFlipped(false);
   };
 
-  const [flipAnimation] = useState(new Animated.Value(0)); // New state for flip animation
+  const [flipAnimation] = useState(new Animated.Value(0));
 
+  //https://reactnative.dev/docs/animations#animated-api
   const startFlipAnimation = () => {
     Animated.timing(flipAnimation, {
       toValue: 180,
@@ -132,6 +133,7 @@ const ViewFlashcard = ({ navigation, route }) => {
               activeOpacity={1}
               onPress={flipCard}
             >
+              {/* https://reactnative.dev/docs/animations#animated-api */}
               <Animated.View
                 style={[
                   styles.card,

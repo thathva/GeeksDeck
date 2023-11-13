@@ -24,6 +24,7 @@ const SelectCategory = ({navigation, quizMode}) => {
   const onSubmit = () => {
     const category = categoryList.find(x => x.name === categories)
     if(category) {
+      //https://reactnavigation.org/docs/params/
         navigation.navigate('View Flashcards', { categoryId: category.id, quizMode: quizMode });
     }
     else {

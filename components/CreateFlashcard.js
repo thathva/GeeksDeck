@@ -42,6 +42,7 @@ const CreateFlashcard = ({ navigation }) => {
     setDefinitionError('');
   }
 
+  //https://www.makeuseof.com/upload-files-to-firebase-using-reactjs/
   const uploadImageToFirebase = async (localUri) => {
     try {
       const response = await fetch(localUri);
@@ -57,7 +58,8 @@ const CreateFlashcard = ({ navigation }) => {
     }
   };
 
-
+  //https://stackoverflow.com/questions/42521679/how-can-i-upload-a-photo-with-expo
+  //https://docs.expo.dev/versions/latest/sdk/imagepicker/
   const pickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
